@@ -26,7 +26,13 @@ READING_RE = re.compile(r"(-?\d+(?:\.\d+)?)\s*([a-zA-Z/]+)")
 
 
 def find_port() -> str:
-    candidates = sorted(glob.glob("/dev/cu.usbmodem*") + glob.glob("/dev/cu.usbserial*"))
+    patterns = [
+        "/dev/cu.usbmodem*",  # macOS CDC
+        "/dev/cu.usbserial*", # macOS FTDI-style
+        "/dev/ttyACM*",       # Linux CDC
+        "/dev/ttyUSB*",       # Linux FTDI-style
+    ]
+    candidates = sorted({p for pat in patterns for p in glob.glob(pat)})
     if not candidates:
         raise SystemExit("No USB serial device found. Plug in the scale or pass --port.")
     return candidates[0]

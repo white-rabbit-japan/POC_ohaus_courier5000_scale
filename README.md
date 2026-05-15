@@ -1,44 +1,75 @@
-# POC: OHAUS Courier 5000 over USB
+# POC: OHAUS Courier 5000 in the Browser
 
-Minimal proof-of-concept for reading weight from an **OHAUS Courier 5000** scale
-over its USB-serial interface on macOS / Linux.
+Read weight from an **OHAUS Courier 5000** scale directly from a web page,
+using the Web Serial API. No drivers, no native helper, no backend.
+
+**Live demo:** <https://white-rabbit-japan.github.io/POC_ohaus_courier5000_scale/>
+
+> Open in Chrome, Edge, or Opera. Firefox and Safari do not support Web Serial.
 
 ![Pikachu on the Courier 5000 — 6.00 kg](pikachu-6kg.jpeg)
 
-## Hardware
+## How it works
 
-- OHAUS Courier 5000
-- USB type-B cable to host
+The Courier 5000 enumerates as a **USB CDC-ACM** serial device. WebUSB cannot
+talk to it — Chromium puts CDC interfaces on a protected-class blocklist that
+refuses `claimInterface()`. The right API is **Web Serial**, which is designed
+for exactly this case and ships in all Chromium-based browsers.
 
-On macOS the scale enumerates as `/dev/cu.usbmodem*` (USB CDC).
+Link settings the scale expects:
 
-## Serial settings
+| Setting     | Value |
+|-------------|-------|
+| Baud        | 9600  |
+| Data bits   | 8     |
+| Parity      | None  |
+| Stop bits   | 1     |
+| Flow ctrl   | None  |
 
-| Setting   | Value  |
-|-----------|--------|
-| Baud      | 9600   |
-| Data bits | 8      |
-| Parity    | None   |
-| Stop bits | 1      |
-
-## Protocol
-
-The Courier 5000 speaks the OHAUS *standard print* protocol (it does **not**
-respond to MT-SICS commands like `SI` / `S` — those return `ES`).
-
-Send a print request:
+Protocol is **OHAUS standard print** — *not* MT-SICS. Send `P\r\n` (or
+`IP\r\n`) and the scale replies with one line:
 
 ```
-P\r\n      (or  IP\r\n )
+       6.00    kg
 ```
 
-The scale replies with a single line such as:
+(MT-SICS commands like `SI` / `S` come back as `ES` — syntax error.)
+
+## Run the web app locally
+
+```bash
+npm install
+npm run dev        # tsc build + python3 -m http.server on :8000
+```
+
+Then open <http://localhost:8000/>, click **Connect scale**, pick the
+`usbmodem` device, and click **Read once** or enable **Stream**.
+
+`http://localhost` is a secure context, so no HTTPS is needed for local
+development. For deployment, push the `docs/` directory to any HTTPS host
+(this repo serves it via GitHub Pages).
+
+### Step-by-step scripts
+
+```bash
+npm run build      # compile src/ -> docs/
+npm run watch      # incremental tsc for development
+npm run serve      # python3 -m http.server --directory docs 8000
+```
+
+### Layout
 
 ```
-       0.32    kg
+src/main.ts        # TypeScript source
+tsconfig.json
+docs/index.html    # static page, deployable as-is
+docs/main.js       # compiled output, committed (zero-build hosting)
 ```
 
-## Usage
+## Appendix: CLI sanity-check (`weigh.py`)
+
+A tiny Python script is included as a quick way to verify the scale and port
+without a browser. Useful for first-time setup and debugging.
 
 ```bash
 pip install pyserial
@@ -48,51 +79,5 @@ python3 weigh.py --raw          # show raw scale response
 python3 weigh.py --port /dev/cu.usbmodemXXXX
 ```
 
-Example:
-
-```
-$ python3 weigh.py
-6.00 kg
-```
-
-## Web Serial POC (TypeScript)
-
-**Live demo:** <https://white-rabbit-japan.github.io/POC_ohaus_courier5000_scale/>
-(open in Chrome/Edge/Opera — Firefox and Safari do not support Web Serial)
-
-A browser-only version lives in `src/main.ts` (compiled to `docs/main.js`).
-It uses the **Web Serial API** — not WebUSB, because CDC devices like this
-scale are on Chromium's WebUSB protected-class blocklist.
-
-### Layout
-
-```
-src/main.ts        # source
-tsconfig.json
-docs/index.html    # static page (deployable as-is)
-docs/main.js       # compiled output, committed
-```
-
-### Run locally
-
-```bash
-npm install
-npm run dev        # tsc build + python3 -m http.server on :8000
-```
-
-Or step-by-step:
-
-```bash
-npm run build      # compile src/ -> docs/
-npm run serve      # python3 -m http.server --directory docs 8000
-npm run watch      # incremental tsc, for development
-```
-
-Open <http://localhost:8000/> in **Chrome, Edge, or Opera** (Firefox and Safari
-do not support Web Serial), click **Connect scale**, and pick the `usbmodem`
-device in the picker.
-
-`http://localhost` counts as a secure context, so no HTTPS is needed for dev.
-For real deployment, host the `docs/` directory anywhere that serves HTTPS
-(GitHub Pages, Cloudflare Pages, Netlify, etc.).
-
+On macOS the scale shows up as `/dev/cu.usbmodem*`; on Linux it's typically
+`/dev/ttyACM*`. The script auto-detects.
