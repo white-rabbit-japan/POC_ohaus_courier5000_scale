@@ -52,5 +52,5 @@ Example:
 
 ```
 $ python3 weigh.py
-0.32 kg
+6.00 kg
 ```
