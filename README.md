@@ -3,6 +3,8 @@
 Minimal proof-of-concept for reading weight from an **OHAUS Courier 5000** scale
 over its USB-serial interface on macOS / Linux.
 
+![Pikachu on the Courier 5000 — 6.34 kg](pikachu-on-scale.jpeg)
+
 ## Hardware
 
 - OHAUS Courier 5000
