@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>OHAUS Courier 5000 — Web Serial POC</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+  :root { color-scheme: light dark; font-family: ui-sans-serif, system-ui, -apple-system, sans-serif; }
+  body { max-width: 640px; margin: 2rem auto; padding: 0 1rem; line-height: 1.5; }
+  h1 { font-size: 1.3rem; margin-bottom: 0.25rem; }
+  .sub { color: #888; margin-top: 0; }
+  button {
+    font: inherit; padding: 0.6rem 1.1rem; border-radius: 8px;
+    border: 1px solid CanvasText; background: Canvas; color: CanvasText;
+    cursor: pointer;
+  }
+  button:hover:not(:disabled) { background: color-mix(in srgb, CanvasText 12%, Canvas); }
+  button:disabled { opacity: 0.35; cursor: not-allowed; }
+  button.primary { background: #2563eb; color: white; border-color: #2563eb; }
+  button.primary:hover:not(:disabled) { background: #1d4ed8; }
+  .reading {
+    font-size: 4rem; font-weight: 700; text-align: center;
+    padding: 2rem 1rem; margin: 1.5rem 0;
+    border: 2px dashed #ccc; border-radius: 12px;
+    font-variant-numeric: tabular-nums;
+  }
+  .reading .unit { font-size: 1.8rem; color: #888; margin-left: 0.4rem; }
+  .row { display: flex; gap: 0.5rem; flex-wrap: wrap; align-items: center; }
+  label { user-select: none; }
+  pre {
+    background: #111; color: #eee; padding: 0.75rem; border-radius: 6px;
+    font-size: 0.85rem; max-height: 200px; overflow: auto;
+  }
+  .status { font-size: 0.9rem; color: #888; }
+  .err { color: #b91c1c; }
+  details { margin-top: 1.5rem; }
+</style>
+</head>
+<body>
+  <h1>OHAUS Courier 5000 — Web Serial POC</h1>
+  <p class="sub">Reads the scale over USB-serial directly from the browser.</p>
+
+  <div class="row">
+    <button id="connect" class="primary">Connect scale</button>
+    <button id="disconnect" disabled>Disconnect</button>
+    <button id="read" disabled>Read once</button>
+    <label><input type="checkbox" id="stream"> Stream (every <input id="interval" type="number" value="500" min="100" step="100" style="width: 4rem"> ms)</label>
+  </div>
+  <p class="status" id="status">Not connected. Click <em>Connect scale</em> and pick the <code>usbmodem</code> device.</p>
+
+  <div class="reading">
+    <span id="value">—</span><span class="unit" id="unit"></span>
+  </div>
+
+  <details>
+    <summary>Raw log</summary>
+    <pre id="log"></pre>
+  </details>
+
+  <details>
+    <summary>Browser support</summary>
+    <p>Web Serial works in Chrome, Edge, and Opera (Chromium 89+). It does <strong>not</strong> work in Firefox or Safari. Localhost is a secure context, so HTTP is fine for dev; deployment needs HTTPS.</p>
+  </details>
+
+
+<script type="module" src="./main.js"></script>
+</body>
+</html>
