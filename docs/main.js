@@ -65,7 +65,7 @@ els.connect.addEventListener("click", async () => {
         setStatus("Connect failed: " + err.message, true);
     }
 });
-els.disconnect.addEventListener("click", async () => {
+async function releasePort() {
     els.stream.checked = false;
     stopStreaming();
     try {
@@ -84,12 +84,29 @@ els.disconnect.addEventListener("click", async () => {
         }
     }
     catch (err) {
-        log("[disconnect] " + err.message);
+        log("[release] " + err.message);
     }
+}
+els.disconnect.addEventListener("click", async () => {
+    await releasePort();
     setConnected(false);
     setStatus("Disconnected.");
     log("[close]");
 });
+// Release the OS-level serial lock when the page goes away (tab close,
+// reload, navigation). Without this, the port stays exclusively held
+// until the entire browser process exits, blocking other tabs/apps.
+window.addEventListener("pagehide", () => { void releasePort(); });
+if ("serial" in navigator) {
+    navigator.serial.addEventListener("disconnect", (event) => {
+        if (port && event.target === port) {
+            void releasePort();
+            setConnected(false);
+            setStatus("Scale was unplugged.", true);
+            log("[disconnect] device removed");
+        }
+    });
+}
 els.read.addEventListener("click", () => { void readOnce(); });
 els.stream.addEventListener("change", () => {
     if (els.stream.checked)
