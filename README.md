@@ -57,6 +57,9 @@ $ python3 weigh.py
 
 ## Web Serial POC (TypeScript)
 
+**Live demo:** <https://white-rabbit-japan.github.io/POC_ohaus_courier5000_scale/>
+(open in Chrome/Edge/Opera — Firefox and Safari do not support Web Serial)
+
 A browser-only version lives in `src/main.ts` (compiled to `docs/main.js`).
 It uses the **Web Serial API** — not WebUSB, because CDC devices like this
 scale are on Chromium's WebUSB protected-class blocklist.
