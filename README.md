@@ -3,7 +3,7 @@
 Read weight from an **OHAUS Courier 5000** scale directly from a web page,
 using the Web Serial API. No drivers, no native helper, no backend.
 
-**Live demo:** <https://white-rabbit-japan.github.io/POC_ohaus_courier5000_scale/>
+**Live demo:** <https://white-rabbit-japan.github.io/web-serial-ohaus-courier/>
 
 > Open in Chrome, Edge, or Opera. Firefox and Safari do not support Web Serial.
 
